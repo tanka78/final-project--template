@@ -1,0 +1,41 @@
+import logging
+import pytest
+from yourapp.models import Product  # Import the Product model
+from yourapp.factories import ProductFactory  # Import the ProductFactory if it exists
+
+# Configure logging
+logging.basicConfig(level=logging.DEBUG)
+
+@pytest.mark.django_db
+def test_product_reading_functionality():
+    # Assuming you have a ProductFactory defined
+    product_factory = ProductFactory()
+
+    # Create a Product object using the factory with desired attributes
+    product_data = {
+        'name': 'Example Product',
+        'price': 10.99,
+        'description': 'This is an example product description.',
+        # Add more attributes as needed
+    }
+    product = product_factory.create(**product_data)
+
+    # Log the product for debugging errors
+    logging.debug(f"Created product: {product}")
+
+    # Set the ID of the product object to None and then create the product
+    product.id = None
+    product.save()
+
+    # Assert that the product ID is not None
+    assert product.id is not None
+
+    # Fetch the product back from the database
+    retrieved_product = Product.objects.get(id=product.id)
+
+    # Assert the properties of the found product are correct
+    assert retrieved_product.name == product_data['name']
+    assert retrieved_product.price == pytest.approx(product_data['price'])  # Use pytest.approx for floating-point comparisons
+    assert retrieved_product.description == product_data['description']
+
+    # Add more assertions for other properties as needed
